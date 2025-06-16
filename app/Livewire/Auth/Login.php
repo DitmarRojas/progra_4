@@ -15,10 +15,10 @@ use Livewire\Component;
 #[Layout('components.layouts.auth')]
 class Login extends Component
 {
-    #[Validate('required|string|email')]
+    #[Validate('required|string|email|max:255')]
     public string $email = '';
 
-    #[Validate('required|string')]
+    #[Validate('required|string|min:6|max:255')]
     public string $password = '';
 
     public bool $remember = false;
