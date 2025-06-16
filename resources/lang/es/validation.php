@@ -147,9 +147,12 @@ return [
     */
 
     'custom' => [
-        'attribute-name' => [
-            'rule-name' => 'mensaje-personalizado',
+        'rol_id' => [
+            'required' => 'Debe seleccionar un rol.',
         ],
+        // 'attribute-name' => [
+        //     'rule-name' => 'custom-message',
+        // ],
     ],
 
     /*
@@ -162,5 +165,7 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'rol_id' => 'rol', // Opcional: para que :attribute se reemplace por "rol" en otros mensajes
+    ],
 ];

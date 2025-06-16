@@ -28,10 +28,10 @@ class Register extends Component
     public function register(): void
     {
         $validated = $this->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'apellidos' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'alpha', 'max:255'],
+            'apellidos' => ['required', 'string', 'alpha', 'max:255'],
             'telefono' => ['required', 'string', 'min:8', 'max:8'],
-            'rol_id' => ['required', 'exists:roles,id'],
+            'rol_id' => ['required','exists:roles,id'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
         ]);
