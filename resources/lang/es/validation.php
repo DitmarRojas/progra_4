@@ -150,6 +150,12 @@ return [
         'rol_id' => [
             'required' => 'Debe seleccionar un rol.',
         ],
+        'nombres' => [
+            'regex' => 'El campo nombres solo puede contener letras y espacios.',
+        ],
+        'apellidos' => [
+            'regex' => 'El campo apellidos solo puede contener letras y espacios.',
+        ],
         // 'attribute-name' => [
         //     'rule-name' => 'custom-message',
         // ],

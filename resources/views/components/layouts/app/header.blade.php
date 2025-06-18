@@ -18,7 +18,7 @@
             </flux:navbar>
 
             <flux:navbar class="-mb-px max-lg:hidden">
-                <flux:navbar.item icon="users" :href="route('register')" :current="request()->routeIs('register')" wire:navigate>
+                <flux:navbar.item icon="users" :href="route('users')" :current="request()->routeIs('users')" wire:navigate>
                     {{ __('Usuarios') }}
                 </flux:navbar.item>
             </flux:navbar>
@@ -105,10 +105,10 @@
             <flux:navlist variant="outline">
                 <flux:navlist.group :heading="__('Platform')">
                     <flux:navlist.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                      {{ __('Dashboard') }}
+                        {{ __('Dashboard') }}
                     </flux:navlist.item>
-                    <flux:navlist.item icon="users" :href="route('register')" :current="request()->routeIs('/register')" wire:navigate>
-                      {{ __('Usuarios') }}
+                    <flux:navlist.item icon="users" :href="route('users')" :current="request()->routeIs('users')" wire:navigate>
+                        {{ __('Usuarios') }}
                     </flux:navlist.item>
                 </flux:navlist.group>
             </flux:navlist>

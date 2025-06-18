@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Auth;
 
-use App\Models\User;
-use App\Models\Rol; // Asegúrate de importar tu modelo Rol
+use App\Models\Rol;
+use App\Models\Usuario;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -17,8 +17,9 @@ class Register extends Component
     public string $name = '';
     public string $apellidos = '';
     public string $telefono = '';
-    public $rol_id = '';
+    public int $rol_id = 0;
     public string $email = '';
+    public string $username = '';
     public string $password = '';
     public string $password_confirmation = '';
 
@@ -28,23 +29,23 @@ class Register extends Component
     public function register(): void
     {
         $validated = $this->validate([
-            'name' => ['required', 'string', 'alpha', 'max:255'],
-            'apellidos' => ['required', 'string', 'alpha', 'max:255'],
+            'nombres' => ['required', 'string', 'alpha', 'max:100'],
+            'apellidos' => ['required', 'string', 'alpha', 'max:100'],
             'telefono' => ['required', 'string', 'min:8', 'max:8'],
+            'username' => ['required', 'string', 'alpha_num', 'max:100', 'unique:'. Usuario::class],
             'rol_id' => ['required','exists:roles,id'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:150', 'unique:'. Usuario::class],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
 
-        // Asegúrate de que los nuevos campos se incluyan en la creación del usuario
-        // y que tu modelo User tenga estos campos en $fillable
-        $user = User::create([
-            'name' => $validated['name'],
+        $user = Usuario::create([
+            'nombres' => $validated['nombres'],
             'apellidos' => $validated['apellidos'],
             'telefono' => $validated['telefono'],
             'email' => $validated['email'],
+            'username' => $validated['username'],
             'password' => $validated['password'],
             'rol_id' => $validated['rol_id'],
         ]);

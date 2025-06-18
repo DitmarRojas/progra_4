@@ -2,15 +2,13 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
-class User extends Authenticatable
+class Usuario extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -19,10 +17,11 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'nombres',
         'apellidos',
         'telefono',
         'email',
+        'username',
         'password',
         'rol_id',
     ];
@@ -55,10 +54,23 @@ class User extends Authenticatable
      */
     public function initials(): string
     {
-        return Str::of($this->name)
+        return Str::of($this->nombres . ' ' . $this->apellidos)
             ->explode(' ')
             ->take(2)
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
+    }
+
+    public function roles()
+    {
+        return $this->belongsTo(Rol::class, 'rol_id');
+    }
+    public function transacciones()
+    {
+        return $this->hasMany(Transaccion::class, 'usuario_id');
+    }
+    public function documentos()
+    {
+        return $this->hasMany(Documento::class, 'usuario_id');
     }
 }
