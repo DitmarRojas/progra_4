@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Schema\ForeignKeyDefinition;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,12 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('organizaciones', function (Blueprint $table) {
+        Schema::create('cuentas_orgs', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre')->unique();
-            $table->string('nit')->unique();
-            $table->string('direccion')->nullable();
-            $table->string('telefono')->nullable();
+            $table->foreignId('cuenta_id')->nullable()->constrained('cuentas')->onDelete('set null');
+            $table->foreignId('organizacion_id')->nullable()->constrained('organizaciones')->onDelete('set null');
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('organizaciones');
+        Schema::dropIfExists('cuentas_orgs');
     }
 };

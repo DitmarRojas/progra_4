@@ -15,11 +15,18 @@ class Organizacion extends Model
         'nombre',
         'nit',
         'direccion',
+        'telefono',
     ];
     public function cuentas()
     {
-        return $this->hasMany(Cuenta::class);
+        return $this->belongsToMany(Cuenta::class , 'cuentas_orgs', 'organizacion_id', 'cuenta_id');
     }
+    
+    public function cuentasOrgs()
+    {
+        return $this->hasMany(CuentasOrgs::class);
+    }
+
     public function periodos()
     {
         return $this->hasMany(Periodo::class);

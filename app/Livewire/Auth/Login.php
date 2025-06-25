@@ -27,24 +27,37 @@ class Login extends Component
      * Handle an incoming authentication request.
      */
     public function login(): void
-    {
-        $this->validate();
+{
+    $this->validate();
 
-        $this->ensureIsNotRateLimited();
+    $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt(['username' => $this->username, 'password' => $this->password], $this->remember)) {
-            RateLimiter::hit($this->throttleKey());
+    if (! Auth::attempt(['username' => $this->username, 'password' => $this->password], $this->remember)) {
+        RateLimiter::hit($this->throttleKey());
 
-            throw ValidationException::withMessages([
-                'username' => __('auth.failed'),
-            ]);
-        }
-
-        RateLimiter::clear($this->throttleKey());
-        Session::regenerate();
-
-        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+        throw ValidationException::withMessages([
+            'username' => __('auth.failed'),
+        ]);
     }
+
+    $usuario = Auth::user();
+    
+    if ($usuario->estado === 'Bloqueado') {
+        Auth::logout();
+        RateLimiter::hit($this->throttleKey());
+        throw ValidationException::withMessages([
+            'username' => 'Tu usuario está bloqueado. Contacta al administrador.',
+        ]);
+    }
+
+    $usuario->estado = 'Activo';
+    $usuario->save();
+
+    RateLimiter::clear($this->throttleKey());
+    Session::regenerate();
+
+    $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+}
 
     /**
      * Ensure the authentication request is not rate limited.
@@ -54,7 +67,7 @@ class Login extends Component
         if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
             return;
         }
-
+        
         event(new Lockout(request()));
 
         $seconds = RateLimiter::availableIn($this->throttleKey());

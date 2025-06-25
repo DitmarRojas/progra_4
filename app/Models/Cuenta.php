@@ -16,13 +16,18 @@ class Cuenta extends Model
         'nombre',
         'tipo',
         'descripcion',
+        'nivel',
         'estado',
-        'organizacion_id',
     ];
 
     public function organizaciones()
     {
-        return $this->belongsTo(Organizacion::class, 'organizacion_id');
+        return $this->belongsToMany(Organizacion::class, 'cuentas_orgs', 'cuenta_id', 'organizacion_id');
+    }
+
+    public function cuentasOrgs()
+    {
+        return $this->hasMany(CuentasOrgs::class);
     }
     
     public function asientosDiarios()

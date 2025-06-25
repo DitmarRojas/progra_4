@@ -24,7 +24,7 @@ class VerifyEmail extends Component
 
         Auth::user()->sendEmailVerificationNotification();
 
-        Session::flash('status', 'verification-link-sent');
+        Session::flash('status', 'Se ha enviado un enlace de verificación a su correo electrónico.');
     }
 
     /**

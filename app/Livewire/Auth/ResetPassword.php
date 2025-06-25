@@ -69,7 +69,7 @@ class ResetPassword extends Component
             return;
         }
 
-        Session::flash('status', __($status));
+        session()->flash('status', __('Tu contraseña ha sido restablecida exitosamente.'));
 
         $this->redirectRoute('login', navigate: true);
     }

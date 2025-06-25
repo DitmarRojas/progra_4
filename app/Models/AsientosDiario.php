@@ -12,6 +12,7 @@ class AsientosDiario extends Model
     protected $table = 'asientos_diarios';
 
     protected $fillable = [
+        'nro_asiento',
         'moto_credito',
         'monto_debito',
         'descripcion',

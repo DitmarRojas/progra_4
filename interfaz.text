@@ -1,0 +1,45 @@
+CLARO
+Fondo principal: #F4F6F8 (gris muy claro)
+Texto principal: #1A1A1A (negro casi puro)
+Acento primario: #0057A0 (azul corporativo)
+Acento secundario: #4DA1FF (azul claro)
+Éxito: #2E7D32 (verde financiero)
+Advertencia: #FFA000 (naranja)
+
+OBSCURO
+Fondo principal: #121212 (gris oscuro casi negro)
+Texto principal: #E0E0E0 (gris claro)
+Acento primario: #3399FF
+Acento secundario: #80CFFF
+Éxito: #81C784
+Advertencia: #FFCA28
+
+CLARO
+Fondo: #FDFEFF
+Texto: #1C1C1C
+Acento primario: #6200EE (morado moderno)
+Acento secundario: #03DAC6 (verde-azulado)
+Éxito: #00C853
+Error: #D32F2F
+
+OBSCURO
+Fondo: #121212
+Texto: #EAEAEA
+Acento primario: #BB86FC
+Acento secundario: #03DAC5
+Éxito: #69F0AE
+Error: #EF5350
+
+CLARO
+Fondo: #FAFAF5
+Texto: #212121
+Acento primario: #004D40 (verde petróleo)
+Acento secundario: #C0A36B (dorado suave)
+Bordes: #DADADA
+
+OBSCURO
+Fondo: #0D0D0D
+Texto: #F1F1F1
+Acento primario: #26A69A
+Acento secundario: #FFD54F
+Bordes: #333333

@@ -12,7 +12,14 @@ class Logout
      */
     public function __invoke()
     {
+        $usuario = Auth::user();
+
         Auth::guard('web')->logout();
+
+        if($usuario) {
+            $usuario->estado = 'Inactivo';
+            $usuario->save();
+        }
 
         Session::invalidate();
         Session::regenerateToken();

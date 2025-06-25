@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('asientos_diarios', function (Blueprint $table) {
             $table->id();
-            $table->decimal('monto_debito', 18, 2);
-            $table->decimal('monto_credito', 18, 2);
+            $table->string('nro_asiento')->nullable();
+            $table->decimal('monto_debe', 18, 2);
+            $table->decimal('monto_haber', 18, 2);
             $table->string('descripcion')->nullable();
             $table->foreignId('transaccion_id')->nullable()->constrained('transacciones')->onDelete('set null');
             $table->foreignId('cuenta_id')->nullable()->constrained('cuentas')->onDelete('set null');

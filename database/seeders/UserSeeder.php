@@ -17,7 +17,7 @@ class UserSeeder extends Seeder
             'nombres' => 'Arleth',
             'apellidos' => 'Ricaldez',
             'telefono' => '78945612',
-            'rol_id' => 2,
+            'rol_id' => 1,
             'email' => 'arleth.ricaldez@prime.com',
             'username' => 'ale.atitag',
             'password' => bcrypt('123456789'),

@@ -1,10 +1,24 @@
 <div>
+    <x-action-message 
+    on="guardado" 
+    class="flex items-center p-4 mb-4 text-sm font-medium rounded-lg bg-green-50 text-green-800 border border-green-200">
+        <div>
+            <span class="font-semibold">¡Éxito!</span> {{ session('message') }}
+        </div>
+    </x-action-message>
+
+    <x-action-message 
+    on="error" 
+    class="flex items-center p-4 mb-4 text-sm font-medium rounded-lg bg-red-50 text-red-800 border border-red-200">
+    <div>
+        <span class="font-semibold">¡Error!</span> {{ session('error') }}
+    </div>
+</x-action-message>
+
     <x-auth-header 
         :title="__('Gestión de usuarios')" 
         :description="__('Visualiza y administra los usuarios de la aplicación')"
     />
-    
-    <x-auth-session-status class="mx-auto max-w-7xl mb-6" :status="session('message')" />
 
     <div class="mx-auto max-w-7xl">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -16,11 +30,13 @@
                     </x-slot>
                 </flux:input>
             </div>
-            <flux:modal.trigger name="usuarioModal">
-                <flux:button wire:click="crear" variant="primary"
-                icon="plus"
-                class="w-full sm:w-auto bg-green-700 hover:bg-green-800"> Nuevo usuario </flux:button>
-            </flux:modal.trigger>
+                <flux:modal.trigger name="registrarUsuario">
+                    <flux:button wire:click="crearModal" 
+                    variant="primary"
+                    icon="plus"
+                    class="w-full sm:w-auto bg-emerald-700 hover:bg-emerald-800"> Nuevo usuario 
+                    </flux:button>
+                </flux:modal.trigger>
         </div>
 
         <!-- Tabla de usuarios -->
@@ -32,7 +48,9 @@
                             <th wire:click="ordenar('nombres')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nombre</th>
                             <th wire:click="ordenar('telefono')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Teléfono</th>
                             <th wire:click="ordenar('email')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Correo</th>
+                            <th wire:click="ordenar('estado')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Estado</th>
                             <th wire:click="ordenar('rol_id')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tipo</th>
+                            <th wire:click="ordenar('created_at')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Fecha de registro</th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
                         </tr>
                     </thead>
@@ -41,8 +59,8 @@
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
-                                        <span class="text-indigo-600 dark:text-indigo-300 font-medium">
+                                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-amber-200 dark:bg-amber-900 flex items-center justify-center">
+                                        <span class="text-red-900 dark:text-indigo-300 font-medium">
                                             {{ strtoupper(substr($usuario->nombres, 0, 1)) }}{{ strtoupper(substr($usuario->apellidos, 0, 1)) }}
                                         </span>
                                     </div>
@@ -64,6 +82,16 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                    {{ $usuario->estado === 'Activo' ? 
+                                        'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
+                                        ($usuario->estado === 'Inactivo' ? 
+                                            'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' : 
+                                            'bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200') }}">
+                                    {{ $usuario->estado }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                     {{ $usuario->roles->nombre === 'Administrador' ? 
                                         'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' : 
                                         ($usuario->roles->nombre === 'Contador' ? 
@@ -72,28 +100,66 @@
                                     {{ $usuario->roles->nombre }}
                                 </span>
                             </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                {{ $usuario->created_at->format('d/m/y') }}
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <div class="flex justify-end space-x-2">
                                     <div>
-                                    <flux:modal.trigger name="usuarioModal">
-                                        <flux:button 
-                                            wire:click="editar({{ $usuario->id }})"
-                                            variant="primary"
-                                            icon="pencil"
-                                            class="bg-violet-500 hover:bg-violet-600">
-                                        </flux:button>
+                                    <flux:modal.trigger name="editarUsuario">
+                                        <flux:tooltip content="Modificar" placement="top">
+                                            <flux:button 
+                                                wire:click="editarModal({{ $usuario->id }})"
+                                                variant="primary"
+                                                icon="pencil"
+                                                class="bg-emerald-400 hover:bg-emerald-500">
+                                            </flux:button>
+                                        </flux:tooltip>
                                     </flux:modal.trigger>
                                 </div>
                                 <div>
                                     <flux:modal.trigger name="eliminarUsuario">
-                                        <flux:button 
-                                        wire:click="eliminarUsuario({{ $usuario->id }})"
-                                        variant="primary"
-                                        icon="trash"
-                                        class="bg-red-500 hover:bg-red-600"
-                                        >
-                                        </flux:button>
+                                        <flux:tooltip content="Eliminar"            placement="top">
+                                            <flux:button 
+                                            wire:click="eliminarModal({{ $usuario->id }})"
+                                            variant="primary"
+                                            icon="trash"
+                                            class="bg-rose-400 hover:bg-rose-500">
+                                            </flux:button>
+                                        </flux:tooltip>
                                     </flux:modal.trigger>
+                                </div>
+                                <div>
+                                    @if($usuario->id === auth()->user()->id)
+                                        <flux:tooltip content="No se puede bloquear/desbloquear a sí mismo" placement="top">
+                                            <flux:button 
+                                                variant="primary"
+                                                icon="lock-closed"
+                                                class="bg-gray-400 hover:bg-gray-500 cursor-not-allowed"
+                                                title="No se puede bloquear/desbloquear a sí mismo">
+                                            </flux:button>
+                                        </flux:tooltip>
+                                    @elseif($usuario->estado !== 'Bloqueado')
+                                        <flux:tooltip content="Bloquear" placement="top">
+                                            <flux:button 
+                                                wire:click="bloquearUsuario({{ $usuario->id }})"
+                                                variant="primary"
+                                                icon="lock-closed"
+                                                class="bg-yellow-400 hover:bg-yellow-500"
+                                                title="Bloquear usuario">
+                                            </flux:button>
+                                        </flux:tooltip>
+                                    @else
+                                        <flux:tooltip content="Desbloquear" placement="top">
+                                            <flux:button 
+                                            wire:click="desbloquearUsuario({{ $usuario->id }})"
+                                            variant="primary"
+                                            icon="lock-open"
+                                            class="bg-green-400 hover:bg-green-500"
+                                            title="Desbloquear usuario">
+                                            </flux:button>
+                                        </flux:tooltip>
+                                    @endif
                                 </div>
                             </div>
                             </td>
@@ -117,30 +183,186 @@
         </div>
     </div>
 
-    <flux:modal name="usuarioModal" class="md:w-96">
-    <div class="space-y-6">
+    <flux:modal name="registrarUsuario" size="lg">
+    <div class="space-y-4 p-4">
         <div>
             <flux:heading size="lg">Registrar usuario</flux:heading>
-            <flux:text class="mt-2">Completa los campos para registrar un nuevo usuario.</flux:text>
+            <flux:text class="mt-1 text-gray-600">Completa los campos para registrar un nuevo usuario.</flux:text>
         </div>
-        <form wire:submit.prevent="registrarEditar">
-        <flux:input class="mb-1" badge="*" wire:model.live="nombres" label="Nombres" type="text" placeholder="nombres"/>
-        <flux:input class="mb-1" type="text" badge="*" wire:model.live="apellidos" label="Apellidos" placeholder="apellidos" />
-        <flux:input class="mb-1" wire:model.live="telefono" label="Telefono" placeholder="telefono" />
-        <flux:input class="mb-1" badge="*" wire:model.live="email" label="Correo" placeholder="correo electronico" :readonly="$activo"/>
-        <flux:input class="mb-1" badge="*" wire:model.live="username" label="Username" placeholder="nombre de usuario" :readonly="$activo"/>
-        <flux:input class="mb-1" badge="*" wire:model.live="password" label="Contraseña" placeholder="contraseña" type="password" :disabled="$activo"/>
-        <flux:input class="mb-1" badge="*" wire:model.live="password_confirmation" label="Confirmar contraseña" placeholder="confirmar contraseña" type="password" 
-        :disabled="$activo"/>
-        <flux:select class="mb-1" wire:model.live="rol_id" label="Tipo de usuario" badge="*">
-            <flux:select.option value="0">Selecciona un tipo de usuario</flux:select.option>
-            <flux:select.option value="1">Administrador</flux:select.option>
-            <flux:select.option value="2">Contador</flux:select.option>
-            <flux:select.option value="3">Invitado</flux:select.option>
-        </flux:select>
-        <div class="flex mt-2">
-            <flux:button type="submit" variant="primary">{{ $usuario_id ? 'Actualizar' : 'Registrar' }}</flux:button>
+        
+        <form wire:submit.prevent="registrarEditar" class="space-y-3">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <div>
+                    <flux:input 
+                        class="w-full" 
+                        badge="*" 
+                        wire:model.live="nombres" 
+                        label="Nombres" 
+                        type="text" 
+                        placeholder="Nombres completos"
+                    />
+                </div>
+                <div>
+                    <flux:input 
+                        class="w-full" 
+                        type="text" 
+                        badge="*" 
+                        wire:model.live="apellidos" 
+                        label="Apellidos" 
+                        placeholder="Apellidos completos"
+                    />
+                </div>
+                <div class="mt-2">
+                    <flux:input 
+                        class="w-full" 
+                        type="text"
+                        wire:model.live="telefono" 
+                        label="Teléfono" 
+                placeholder="Número de teléfono"
+                />
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                    <div class="col-span-2">
+                        <flux:input 
+                            class="w-full" 
+                            badge="*" 
+                            wire:model.live="email" 
+                            label="Correo" 
+                            placeholder="correo@ejemplo.com" 
+                            :readonly="$activo"
+                        />
+                    </div>
+                    <div>
+            <flux:select 
+                class="w-full" 
+                wire:model.live="rol_id" 
+                label="Tipo de usuario" 
+                badge="*"
+                >
+            <flux:select.option value="" readonly>Seleccione una opcion</flux:select.option>
+            @foreach($roles as $rol)
+                <flux:select.option value="{{$rol->id}}">{{$rol->nombre}}</flux:select.option>
+            @endforeach
+            </flux:select>
         </div>
+    </div>
+            <flux:input 
+                class="w-full" 
+                badge="*" 
+                wire:model.live="username" 
+                label="Username" 
+                placeholder="nombre de usuario" 
+                :readonly="$activo"
+            />
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <flux:input 
+                        class="w-full" 
+                        badge="*" 
+                        wire:model.live="password" 
+                        label="Contraseña" 
+                        placeholder="••••••••" 
+                        type="password" 
+                        :disabled="$activo"
+                    />
+                </div>
+                <div>
+                    <flux:input 
+                        class="w-full" 
+                        badge="*" 
+                        wire:model.live="password_confirmation" 
+                        label="Confirmar contraseña" 
+                        placeholder="••••••••" 
+                        type="password" 
+                        :disabled="$activo"
+                    />
+                </div>
+            </div>
+            <div class="flex justify-end mt-4">
+                <flux:button type="submit" variant="primary" class="w-full md:w-auto">
+                    {{ $usuario_id ? 'Actualizar' : 'Registrar' }}
+                </flux:button>
+            </div>
+        </form>
+    </div>
+</flux:modal>
+
+    <flux:modal name="editarUsuario" size="lg">
+        <div class="space-y-4 p-4">
+        <div>
+            <flux:heading size="lg">Modificar usuario</flux:heading>
+            <flux:text class="mt-2">Solo puede modificar algunos campos.</flux:text>
+        </div>
+        <form wire:submit.prevent="registrarEditar" class="space-y-3">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <div>
+                    <flux:input 
+                        class="w-full" 
+                        badge="*" 
+                        wire:model.live="nombres" 
+                        label="Nombres" 
+                        type="text" 
+                        placeholder="Nombres completos"
+                    />
+                </div>
+                <div>
+                    <flux:input 
+                        class="w-full" 
+                        type="text" 
+                        badge="*" 
+                        wire:model.live="apellidos" 
+                        label="Apellidos" 
+                        placeholder="Apellidos completos"
+                    />
+                </div>
+                <div class="mt-2">
+                    <flux:input 
+                        class="w-full" 
+                        type="text"
+                        wire:model.live="telefono" 
+                        label="Teléfono" 
+                placeholder="Número de teléfono"
+                />
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                    <div class="col-span-2">
+                        <flux:input 
+                            class="w-full" 
+                            badge="*" 
+                            wire:model.live="email" 
+                            label="Correo" 
+                            placeholder="correo@ejemplo.com" 
+                            :readonly="$activo"
+                        />
+                    </div>
+                    <div>
+            <flux:select 
+                class="w-full" 
+                wire:model.live="rol_id" 
+                label="Tipo de usuario" 
+                badge="*"
+            >
+            @foreach($roles as $rol)
+                <flux:select.option value="{{$rol->id}}">{{$rol->nombre}}</flux:select.option>
+            @endforeach
+            </flux:select>
+        </div>
+    </div>
+            <flux:input 
+                class="w-full" 
+                badge="*" 
+                wire:model.live="username" 
+                label="Username" 
+                placeholder="nombre de usuario" 
+                :readonly="$activo"
+            />
+            <div class="flex justify-end mt-4">
+                <flux:button type="submit" variant="primary" class="w-full md:w-auto">
+                    {{ $usuario_id ? 'Actualizar' : 'Registrar' }}
+                </flux:button>
+            </div>
     </form>
     </div>
     </flux:modal>
@@ -163,7 +385,7 @@
                 <flux:button variant="ghost">Cancelar</flux:button>
             </flux:modal.close>
 
-            <flux:button wire:click="eliminarUsuario" variant="danger">Eliminar</flux:button>
+            <flux:button wire:click="eliminar" variant="danger">Eliminar</flux:button>
         </div>
     </div>
 </flux:modal>

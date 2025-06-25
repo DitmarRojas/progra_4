@@ -16,17 +16,24 @@
                     {{ __('Dashboard') }}
                 </flux:navbar.item>
             </flux:navbar>
-
+            @if (auth()->user()->rol_id === 1)
             <flux:navbar class="-mb-px max-lg:hidden">
                 <flux:navbar.item icon="users" :href="route('users')" :current="request()->routeIs('users')" wire:navigate>
                     {{ __('Usuarios') }}
                 </flux:navbar.item>
+                <flux:navbar.item icon="building-2" :href="route('organizaciones')" :current="request()->routeIs('organizaciones')" wire:navigate>
+                    {{ __('Organizaciones') }}
+                </flux:navbar.item>
+                <flux:navbar.item icon="book-text" :href="route('cuentas')" :current="request()->routeIs('cuentas')" wire:navigate>
+                    {{ __('Cuentas') }}
+                </flux:navbar.item>
             </flux:navbar>
+            @endif
 
             <flux:spacer />
 
             <flux:navbar class="me-1.5 space-x-0.5 rtl:space-x-reverse py-0!">
-                <flux:tooltip :content="__('Search')" position="bottom">
+                {{-- <flux:tooltip :content="__('Search')" position="bottom">
                     <flux:navbar.item class="!h-10 [&>div>svg]:size-5" icon="magnifying-glass" href="#" :label="__('Search')" />
                 </flux:tooltip>
                 <flux:tooltip :content="__('Repository')" position="bottom">
@@ -46,7 +53,7 @@
                         target="_blank"
                         label="Documentation"
                     />
-                </flux:tooltip>
+                </flux:tooltip> --}}
             </flux:navbar>
 
             <!-- Desktop User Menu -->
@@ -79,7 +86,7 @@
                     <flux:menu.separator />
 
                     <flux:menu.radio.group>
-                        <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
+                        <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Ajustes') }}</flux:menu.item>
                     </flux:menu.radio.group>
 
                     <flux:menu.separator />
@@ -87,7 +94,7 @@
                     <form method="POST" action="{{ route('logout') }}" class="w-full">
                         @csrf
                         <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full">
-                            {{ __('Log Out') }}
+                            {{ __('Cerrar session') }}
                         </flux:menu.item>
                     </form>
                 </flux:menu>
@@ -107,9 +114,17 @@
                     <flux:navlist.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:navlist.item>
+                    @if (auth()->user()->rol_id === 1)
                     <flux:navlist.item icon="users" :href="route('users')" :current="request()->routeIs('users')" wire:navigate>
                         {{ __('Usuarios') }}
                     </flux:navlist.item>
+                    <flux:navlist.item icon="building-2" :href="route('organizaciones')" :current="request()->routeIs('organizaciones')" wire:navigate>
+                        {{ __('Organizaciones') }}
+                    </flux:navlist.item>
+                    <flux:navlist.item icon="book-text" :href="route('cuentas')" :current="request()->routeIs('cuentas')" wire:navigate>
+                        {{ __('Cuentas') }}
+                    </flux:navlist.item>
+                    @endif
                 </flux:navlist.group>
             </flux:navlist>
 

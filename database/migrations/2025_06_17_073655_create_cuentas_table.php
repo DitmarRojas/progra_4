@@ -15,11 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('codigo')->unique();
             $table->string('nombre');
-            $table->string('tipo');
+            $table->enum('tipo',['Activo', 'Pasivo', 'Patrimonio', 'Ingresos', 'Egresos']);
             $table->string('descripcion')->nullable();
+            $table->enum('nivel',['1','2','3','4','5'])->default('1');
             $table->boolean('estado')->default(false);
-            $table->foreignId('organizacion_id')->nullable()->constrained('organizaciones')
-            ->onDelete('set null');
             $table->timestamps();
         });
     }

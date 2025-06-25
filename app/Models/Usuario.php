@@ -23,6 +23,7 @@ class Usuario extends Authenticatable
         'email',
         'username',
         'password',
+        'estado',
         'rol_id',
     ];
 

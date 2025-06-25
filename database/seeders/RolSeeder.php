@@ -22,10 +22,5 @@ class RolSeeder extends Seeder
             'nombre' => 'Contador',
             'descripcion' => 'Rol con permisos limitados',
         ]);
-
-        Rol::create([
-            'nombre' => 'Usuario',
-            'descripcion' => 'Rol con permisos mínimos',
-        ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Rol;
 use App\Models\Usuario;
 use Exception;
 use Illuminate\Support\Facades\Hash;
@@ -14,6 +15,7 @@ class Usuarios extends Component
     use WithPagination;
 
     public $usuario_id;
+    public $estado;
     public string $nombres = '';
     public string $apellidos = '';
     public string $telefono = '';
@@ -27,7 +29,7 @@ class Usuarios extends Component
     public $orden = 'asc';
     public $buscar = '';
 
-    public function crear(): void
+    public function crearModal(): void
     {
         $this->resetErrorBag();
         $this->resetValidation();
@@ -59,30 +61,32 @@ public function registrarEditar(): void
         $usuario = Usuario::find($this->usuario_id);
         if($usuario) {
             $usuario->update([
-                'nombres' => $this->nombres,
-                'apellidos' => $this->apellidos,
+                'nombres' => ucfirst($this->nombres),
+                'apellidos' => ucfirst($this->apellidos),
                 'telefono' => $this->telefono,
-                'email' => $this->email,
                 'rol_id' => $this->rol_id,
             ]);
-            session()->flash('message', 'Usuario actualizado correctamente.');
+            $this->dispatch('guardado');
+            session()->flash('message', 'Usuario ' .  $usuario->nombres . ' modificado correctamente.');
+            $this->modal('editarUsuario')->close();
         }
     } else {
         $usuario = Usuario::create([
-            'nombres' => $this->nombres,
-            'apellidos' => $this->apellidos,
+            'nombres' => ucfirst($this->nombres),
+            'apellidos' => ucfirst($this->apellidos),
             'telefono' => $this->telefono,
             'email' => $this->email,
             'username' => $this->username,
             'password' => Hash::make($this->password),
             'rol_id' => $this->rol_id,
         ]);
-        session()->flash('message', 'Usuario registrado correctamente.');
+        $this->dispatch('guardado');
+        session()->flash('message', 'Usuario guardado correctamente.');
+        $this->modal('registrarUsuario')->close();
     }
     $this->vaciarFormulario();
-    $this->modal('usuarioModal')->close();
 }
-    public function editar($id):void
+    public function editarModal($id):void
     {
         $this->resetErrorBag();
         $this->resetValidation();
@@ -122,7 +126,7 @@ public function updated($propertyName)
     }
 }
 
-    public function eliminarUsuario($id):void
+    public function eliminarModal($id):void
     {
         $usuario = Usuario::find($id);
         if($usuario)
@@ -134,20 +138,17 @@ public function updated($propertyName)
 
     public function eliminar (): void
     {
-        try{
             $usuario = Usuario::find($this->usuario_id);
             if($usuario)
             {
                 $usuario->delete();
+                $this->dispatch('guardado');
                 session()->flash('message', 'Se eliminó correctamente el usuario ' . $usuario->nombres . '.');
             }
-            $this->modal('eliminar-usuario')->close();
+            $this->modal('eliminarUsuario')->close();
             $this->usuario_id = null;
             $this->nombres = '';
             $this->resetPage();
-        } catch (Exception $e){
-            session()->flash('error', 'Error al eliminar el usuario: ' . $e->getMessage());
-        }
     }
 
     public function vaciarFormulario(): void
@@ -170,13 +171,38 @@ public function updated($propertyName)
         }
     }
 
+    public function bloquearUsuario($id): void
+    {
+        $usuario = Usuario::find($id);
+        if ($usuario && $usuario->estado !== 'Bloqueado') {
+            $usuario->estado = 'Bloqueado';
+            $usuario->save();
+            $this->dispatch('guardado');
+            session()->flash('message', 'Usuario ' . $usuario->nombres . ' bloqueado correctamente.');
+            $this->resetPage();
+        }
+    }
+    
+    public function desbloquearUsuario($id): void
+    {
+        $usuario = Usuario::find($id);
+        if ($usuario && $usuario->estado === 'Bloqueado') {
+            $usuario->estado = 'Inactivo';
+            $usuario->save();
+            $this->dispatch('guardado');
+            session()->flash('message', 'Usuario ' . $usuario->nombres . ' desbloqueado correctamente.');
+            $this->resetPage();
+        }
+    }
+
     public function render()
-{
+    {
         $usuarios = Usuario::where('username', 'like', '%' . $this->buscar . '%')
             ->orWhere('nombres', 'like', '%' . $this->buscar . '%')
             ->orderBy($this->contenido, $this->orden)
             ->paginate(5);
 
-    return view('livewire.usuarios', [ 'usuarios' => $usuarios ]);
-}
+    return view('livewire.usuarios', [ 'usuarios' => $usuarios ,
+                'roles' => Rol::all()]);
+    }
 }

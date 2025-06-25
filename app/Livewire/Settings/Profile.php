@@ -11,7 +11,9 @@ use Livewire\Component;
 class Profile extends Component
 {
     public string $nombres = '';
-
+    public string $apellidos = '';
+    public string $telefono = '';
+    public string $username = '';
     public string $email = '';
 
     /**
@@ -20,6 +22,9 @@ class Profile extends Component
     public function mount(): void
     {
         $this->nombres = Auth::user()->nombres;
+        $this->apellidos = Auth::user()->apellidos;
+        $this->telefono = Auth::user()->telefono;
+        $this->username = Auth::user()->username;
         $this->email = Auth::user()->email;
     }
 
@@ -31,8 +36,10 @@ class Profile extends Component
         $user = Auth::user();
 
         $validated = $this->validate([
-            'nombres' => ['required', 'string', 'max:255'],
-
+            'nombres' => ['required', 'string', 'max:100', 'regex:/^[\pL\s]+$/u'],
+            'apellidos' => ['required','string','max:100', 'regex:/^[\pL\s]+$/u'],
+            'telefono' => ['nullable','numeric','digits:8'],
+            'username' => ['required', 'string', 'max:50',Rule::unique(Usuario::class)->ignore($user->id)],
             'email' => [
                 'required',
                 'string',

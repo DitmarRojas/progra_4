@@ -16,7 +16,7 @@ return new class extends Migration
             $table->date('fecha_transaccion');
             $table->string('descripcion')->nullable();
             $table->string('num_referencia')->nullable();
-            $table->string('tipo_transaccion');
+            $table->enum('tipo_transaccion',['Ingreso', 'Gasto', 'Transferencia', 'Ajuste', 'Otro'])->default('Otro');
             $table->boolean('estado')->default(false);
             $table->foreignId('usuario_id')->nullable()
             ->constrained('usuarios')->onDelete('set null');
