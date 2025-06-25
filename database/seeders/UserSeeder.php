@@ -22,5 +22,14 @@ class UserSeeder extends Seeder
             'username' => 'ale.atitag',
             'password' => bcrypt('123456789'),
         ]);
+        Usuario::create([
+            'nombres' => 'fulanito',
+            'apellidos' => 'prueba',
+            'telefono' => '78541254',
+            'rol_id' => 2,
+            'email' => 'fulanito@prime.com',
+            'username' => 'fulanito123',
+            'password' => bcrypt('123456789'),
+        ]);
     }
 }
