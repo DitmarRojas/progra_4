@@ -14,6 +14,7 @@ return new class extends Migration
     {
         Schema::create('cuentas_orgs', function (Blueprint $table) {
             $table->id();
+            $table->unique(['cuenta_id','organizacion_id']);
             $table->foreignId('cuenta_id')->nullable()->constrained('cuentas')->onDelete('set null');
             $table->foreignId('organizacion_id')->nullable()->constrained('organizaciones')->onDelete('set null');
             $table->timestamps();

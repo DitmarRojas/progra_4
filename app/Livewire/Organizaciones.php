@@ -29,7 +29,7 @@ class Organizaciones extends Component
             'nombre' => 'required|string|max:255|unique:organizaciones,nombre',
             'nit' => 'required|numeric|digits:10|unique:organizaciones,nit',
             'direccion' => 'nullable|string|max:255',
-            'telefono' => 'nullable|string|max:20',
+            'telefono' => 'nullable|string|min:7|max:10',
         ]);
 
         Organizacion::create([
@@ -57,13 +57,14 @@ class Organizaciones extends Component
             $this->telefono = $organizacion->telefono;
         }
     }
+
     public function editar():void
     {
         $this->validate([
             'nombre' => 'required|string|max:255|unique:organizaciones,nombre,' . $this->organizacion_id,
             'nit' => 'required|numeric|digits:10|unique:organizaciones,nit,' . $this->organizacion_id,
             'direccion' => 'nullable|string|max:255',
-            'telefono' => 'nullable|string|max:20',
+            'telefono' => 'nullable|string|min:7|max:10',
         ]);
 
         $organizacion = Organizacion::find($this->organizacion_id);
@@ -107,7 +108,7 @@ class Organizaciones extends Component
             'nombre' => 'string|max:255|unique:organizaciones,nombre,' . $this->organizacion_id,
             'nit' => 'numeric|digits:10|unique:organizaciones,nit,' . $this->organizacion_id,
             'direccion' => 'nullable|string|max:255',
-            'telefono' => 'nullable|string|max:20',
+            'telefono' => 'nullable|string|min:7|max:10',
         ]);
     }
 

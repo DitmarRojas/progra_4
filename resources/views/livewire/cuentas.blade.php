@@ -1,12 +1,60 @@
 <div>
-        <x-action-message 
+    <x-action-message 
             on="alertaCuenta" 
             class="flex items-center p-4 mb-4 text-sm font-medium rounded-lg bg-green-50 text-green-800 border border-green-200 shadow-lg pointer-events-auto">
             <div>
                 <span class="font-semibold">¡Éxito!</span> {{ session('message') }}
             </div>
         </x-action-message>
-
+    <x-auth-header 
+        :title="__('Gestión de cuentas')" 
+        :description="__('Visualiza y administra las cuentas de la aplicación')"
+    />
+    <div class="w-full sm:w-120">
+        {{-- <pre>organizacion_id: {{ $organizacion_id }}</pre> --}}
+        <flux:input.group label="Seleccione una organización">
+            <flux:select wire:model.live="organizacion_id" class="max-w-fit">
+                <flux:select.option value="">Seleccione una ORG...</flux:select.option>
+                @forelse($organizaciones as $org)
+                    <flux:select.option value="{{ $org->id }}">
+                    {{ $org->nombre }}
+                    </flux:select.option>
+                @empty
+                    <flux:select.option value="" disabled>No hay organizaciones disponibles</flux:select.option>
+                @endforelse
+            </flux:select>
+            <flux:input wire:model.live="buscarOrg" placeholder="Ingrese el NIT" />
+        </flux:input.group>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 my-4">
+            <div>
+            @if($organizacion)
+            <flux:modal.trigger name="crearCuentasOrg">
+                <flux:button class="w-full bg-purple-800 hover:bg-purple-700" variant="primary">Asociar cuentas</flux:button>
+            </flux:modal.trigger>
+            @else
+            <flux:button class="w-full bg-purple-800 hover:bg-purple-700" variant="primary" disabled>Asociar cuentas</flux:button>
+            @endif
+        </div>
+                {{-- <pre>@json($seleccionados)</pre> --}}
+        
+        <div class="w-full">
+            <flux:input wire:model.live="buscar" icon="magnifying-glass" placeholder="Buscar cuenta">
+                <x-slot name="iconTrailing">
+                    <flux:button wire:click="vaciarFormulario" size="sm" variant="subtle" icon="x-mark"/>
+                </x-slot>
+            </flux:input>
+        </div>
+        <div class="w-full">
+            <flux:modal.trigger name="crearCuenta">
+                <flux:button wire:click="crearModal" 
+                variant="primary"
+                icon="plus"
+                class="w-full bg-emerald-700 hover:bg-emerald-800"> Nueva cuenta 
+                </flux:button>
+            </flux:modal.trigger>
+        </div>
+    </div>
         <x-action-message 
             on="error" 
             class="flex items-center p-4 mb-4 text-sm font-medium rounded-lg bg-red-50 text-red-800 border border-red-200 shadow-lg pointer-events-auto">
@@ -14,37 +62,15 @@
                 <span class="font-semibold">¡Error!</span> {{ session('error') }}
             </div>
         </x-action-message>
-
-    <x-auth-header 
-        :title="__('Gestión de cuentas')" 
-        :description="__('Visualiza y administra las cuentas de la aplicación')"
-    />
-
     <div class="mx-auto max-w-7xl">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-            <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Lista de cuentas</h1>
-            <div class="flex w-full sm:w-auto">
-                <flux:input wire:model.live="buscar" icon="magnifying-glass" placeholder="Buscar cuenta">
-                    <x-slot name="iconTrailing">
-                        <flux:button wire:click="vaciarFormulario" size="sm" variant="subtle" icon="x-mark"/>
-                    </x-slot>
-                </flux:input>
-            </div>
-                <flux:modal.trigger name="crearCuenta">
-                    <flux:button wire:click="crearModal" 
-                    variant="primary"
-                    icon="plus"
-                    class="w-full sm:w-auto bg-emerald-700 hover:bg-emerald-800"> Nueva cuenta 
-                    </flux:button>
-                </flux:modal.trigger>
-        </div>
-
         <!-- Tabla de organizaciones -->
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300">
             <div class="overflow-x-auto">
                 <table class="w-full min-w-max">
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
+                            <th wire:click="" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Selecionar</th>
+                            <th wire:click="ordenar('id')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
                             <th wire:click="ordenar('codigo')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Codigo</th>
                             <th wire:click="ordenar('nombre')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nombre</th>
                             <th wire:click="ordenar('tipo')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tipo</th>
@@ -55,7 +81,18 @@
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                         @forelse($cuentas as $cuenta)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
+                        <tr {{-- key="cuenta-{{ $cuenta->id }}" --}} class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                @if($organizacion)
+                                <flux:checkbox type="checkbox" wire:model.live="seleccionados" value="{{ $cuenta->id }}" wire:key="checkbox-{{ $cuenta->id }} "/>
+                                @else
+                                <flux:checkbox type="checkbox" disabled />
+                                @endif
+                                {{-- <input type="checkbox" wire:model.live="seleccionados" value="{{ $cuenta->id }}" wire:key="checkbox-{{ $cuenta->id }}"> --}}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                {{ $cuenta->id }}
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 {{ $cuenta->codigo }}
                             </td>
@@ -141,8 +178,6 @@
             @endif
         </div>
     </div>
-
-    <livewire:cuentas-por-org/>
 
     <flux:modal name="crearCuenta" size="lg" :dismissible="false">
         <x-action-message 
@@ -311,4 +346,37 @@
             </div>
         </div>
     </flux:modal>
+
+    <flux:modal name="crearCuentasOrg" variant="flyout" size="md">
+        <form wire:submit.prevent="asociarCuentas">
+        <div class="space-y-6">
+            <div>
+                <flux:heading size="xl">Lista de cuentas marcadas</flux:heading>
+                @if($organizacion)
+                    <flux:text class="mt-2" color="violet">{{$organizacion->nombre}} - NIT: {{$organizacion->nit}}</flux:text>
+                @else
+                    <flux:text class="mt-2" color="rose">!Selecciona una organizacion!</flux:text>
+                @endif
+            </div>
+    <div class="space-y-4">
+        <flux:text class="mt-2 text-violet-200" >Verifica el codigo y nombre de las cuentas que marco.</flux:text>
+        @if(empty($seleccionados))
+                <flux:text>No hay cuentas seleccionadas.</flux:text>
+            @else
+                @foreach($cuentasSeleccionadas as $cuenta)
+                <flux:badge color="lime">
+                    {{ $cuenta->codigo }} - {{ $cuenta->nombre }}
+                    <flux:badge.close wire:click="eliminarCuentaSeleccionada({{ $cuenta->id }})" />
+                </flux:badge>
+                @endforeach
+            @endif
+    </div>
+
+        <div class="flex">
+            <flux:spacer />
+                <flux:button type="submit" variant="primary">Confirmar</flux:button>
+            </div>
+        </div>
+    </flux:modal>
+</form>
 </div>

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('nombre');
             $table->date('fecha_inicio');
             $table->date('fecha_fin');
-            $table->string('estado')->default('Cerrado');
+            $table->enum('estado',['Abierto', 'Cerrado'])->default('Cerrado');
             $table->foreignId('organizacion_id')->nullable()->constrained('organizaciones')
             ->onDelete('set null');
             $table->timestamps();
