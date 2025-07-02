@@ -54,7 +54,7 @@ class Cuentas extends Component
                 'descripcion' => $this->descripcion,
                 'nivel' => $this->nivel,
             ]);
-        $this->dispatch('alertaCuenta');
+        $this->dispatch('alertas');
         session()->flash('message', 'Cuenta creada exitosamente.');
         $this->modal('crearCuenta')->close();
         $this->vaciarFormulario();
@@ -95,7 +95,7 @@ class Cuentas extends Component
                     'nivel' => $this->nivel,
                 ]);
             }
-        $this->dispatch('alertaCuenta');
+        $this->dispatch('alertas');
         session()->flash('message', 'Cuenta modificada exitosamente.');
         $this->modal('editarCuenta')->close();
         $this->vaciarFormulario();
@@ -115,7 +115,7 @@ class Cuentas extends Component
         $cuenta = Cuenta::find($this->cuenta_id);
         if ($cuenta) {
             $cuenta->delete();
-            $this->dispatch('alertaCuenta');
+            $this->dispatch('alertas');
             session()->flash('message', 'Cuenta eliminada exitosamente.');
         }
         $this->modal('eliminarCuenta')->close();
@@ -188,7 +188,7 @@ class Cuentas extends Component
                 'organizacion_id' => $this->organizacion_id,
             ]);
         }
-        $this->dispatch('alertaCuenta');
+        $this->dispatch('alertas');
         session()->flash('message', 'Cuentas asociadas exitosamente.');
         $this->modal('crearCuentasOrg')->close();
     }

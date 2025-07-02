@@ -66,7 +66,7 @@ public function registrarEditar(): void
                 'telefono' => $this->telefono,
                 'rol_id' => $this->rol_id,
             ]);
-            $this->dispatch('guardado');
+            $this->dispatch('alertas');
             session()->flash('message', 'Usuario ' .  $usuario->nombres . ' modificado correctamente.');
             $this->modal('editarUsuario')->close();
         }
@@ -80,7 +80,7 @@ public function registrarEditar(): void
             'password' => Hash::make($this->password),
             'rol_id' => $this->rol_id,
         ]);
-        $this->dispatch('guardado');
+        $this->dispatch('alertas');
         session()->flash('message', 'Usuario guardado correctamente.');
         $this->modal('registrarUsuario')->close();
     }
@@ -142,7 +142,7 @@ public function updated($propertyName)
             if($usuario)
             {
                 $usuario->delete();
-                $this->dispatch('guardado');
+                $this->dispatch('alertas');
                 session()->flash('message', 'Se eliminó correctamente el usuario ' . $usuario->nombres . '.');
             }
             $this->modal('eliminarUsuario')->close();
@@ -177,7 +177,7 @@ public function updated($propertyName)
         if ($usuario && $usuario->estado !== 'Bloqueado') {
             $usuario->estado = 'Bloqueado';
             $usuario->save();
-            $this->dispatch('guardado');
+            $this->dispatch('alertas');
             session()->flash('message', 'Usuario ' . $usuario->nombres . ' bloqueado correctamente.');
             $this->resetPage();
         }
@@ -189,7 +189,7 @@ public function updated($propertyName)
         if ($usuario && $usuario->estado === 'Bloqueado') {
             $usuario->estado = 'Inactivo';
             $usuario->save();
-            $this->dispatch('guardado');
+            $this->dispatch('alertas');
             session()->flash('message', 'Usuario ' . $usuario->nombres . ' desbloqueado correctamente.');
             $this->resetPage();
         }

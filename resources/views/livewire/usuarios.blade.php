@@ -1,60 +1,107 @@
 <div>
     <x-action-message 
-    on="guardado" 
-    class="flex items-center p-4 mb-4 text-sm font-medium rounded-lg bg-green-50 text-green-800 border border-green-200">
-        <div>
-            <span class="font-semibold">¡Éxito!</span> {{ session('message') }}
-        </div>
+            on="alertas" 
+            class="flex items-center p-4 mb-4 text-sm font-medium rounded-lg bg-green-50 text-green-800 border border-green-200 shadow-lg pointer-events-auto">
+            <div>
+                <span class="font-semibold">¡Éxito!</span> {{ session('message') }}
+            </div>
     </x-action-message>
 
-    <x-action-message 
-    on="error" 
-    class="flex items-center p-4 mb-4 text-sm font-medium rounded-lg bg-red-50 text-red-800 border border-red-200">
-    <div>
-        <span class="font-semibold">¡Error!</span> {{ session('error') }}
+    {{-- Header principal --}}
+    <div class="mb-8">
+        <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">Gestión de Usuarios</flux:heading>
+        <flux:subheading class="text-gray-600 dark:text-gray-400">Administra los usuarios del sistema contable empresarial</flux:subheading>
     </div>
-</x-action-message>
 
-    <x-auth-header 
-        :title="__('Gestión de usuarios')" 
-        :description="__('Visualiza y administra los usuarios de la aplicación')"
-    />
-
-    <div class="mx-auto max-w-7xl">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-            <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Lista de usuarios</h1>
-            <div class="flex w-full sm:w-auto">
-                <flux:input wire:model.live="buscar" icon="magnifying-glass" placeholder="Buscar usuario">
-                    <x-slot name="iconTrailing">
-                        <flux:button wire:click="vaciarFormulario" size="sm" variant="subtle" icon="x-mark"/>
-                    </x-slot>
-                </flux:input>
+    {{-- Panel principal de gestión --}}
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+        <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div class="flex items-center">
+                    <flux:icon.users class="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" />
+                    <flux:heading size="lg" class="text-gray-900 dark:text-gray-100">Lista de Usuarios</flux:heading>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+                    <div class="flex-1 sm:w-80">
+                        <flux:input 
+                            wire:model.live="buscar" 
+                            icon="magnifying-glass" 
+                            placeholder="Buscar usuario..."
+                            class="w-full">
+                            <x-slot name="iconTrailing">
+                                @if($buscar)
+                                    <flux:button wire:click="vaciarFormulario" size="sm" variant="ghost" icon="x-mark"/>
+                                @endif
+                            </x-slot>
+                        </flux:input>
+                    </div>
+                    
+                    <flux:modal.trigger name="registrarUsuario">
+                        <flux:button 
+                            wire:click="crearModal" 
+                            variant="primary"
+                            icon="plus">
+                            Nuevo Usuario
+                        </flux:button>
+                    </flux:modal.trigger>
+                </div>
             </div>
-                <flux:modal.trigger name="registrarUsuario">
-                    <flux:button wire:click="crearModal" 
-                    variant="primary"
-                    icon="plus"
-                    class="w-full sm:w-auto bg-emerald-700 hover:bg-emerald-800"> Nuevo usuario 
-                    </flux:button>
-                </flux:modal.trigger>
         </div>
 
-        <!-- Tabla de usuarios -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300">
+        <div class="p-6">
             <div class="overflow-x-auto">
-                <table class="w-full min-w-max">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th wire:click="ordenar('nombres')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nombre</th>
-                            <th wire:click="ordenar('telefono')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Teléfono</th>
-                            <th wire:click="ordenar('email')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Correo</th>
-                            <th wire:click="ordenar('estado')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Estado</th>
-                            <th wire:click="ordenar('rol_id')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tipo</th>
-                            <th wire:click="ordenar('created_at')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Fecha de registro</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
+                            <th wire:click="ordenar('nombres')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <div class="flex items-center">
+                                    <flux:icon.user class="w-4 h-4 mr-2" />
+                                    Usuario
+                                    <flux:icon.chevron-up-down class="w-4 h-4 ml-1" />
+                                </div>
+                            </th>
+                            <th wire:click="ordenar('telefono')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <div class="flex items-center">
+                                    <flux:icon.phone class="w-4 h-4 mr-2" />
+                                    Teléfono
+                                    <flux:icon.chevron-up-down class="w-4 h-4 ml-1" />
+                                </div>
+                            </th>
+                            <th wire:click="ordenar('email')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <div class="flex items-center">
+                                    <flux:icon.envelope class="w-4 h-4 mr-2" />
+                                    Correo
+                                    <flux:icon.chevron-up-down class="w-4 h-4 ml-1" />
+                                </div>
+                            </th>
+                            <th wire:click="ordenar('estado')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <div class="flex items-center">
+                                    <flux:icon.shield-check class="w-4 h-4 mr-2" />
+                                    Estado
+                                    <flux:icon.chevron-up-down class="w-4 h-4 ml-1" />
+                                </div>
+                            </th>
+                            <th wire:click="ordenar('rol_id')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <div class="flex items-center">
+                                    <flux:icon.key class="w-4 h-4 mr-2" />
+                                    Rol
+                                    <flux:icon.chevron-up-down class="w-4 h-4 ml-1" />
+                                </div>
+                            </th>
+                            <th wire:click="ordenar('created_at')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <div class="flex items-center">
+                                    <flux:icon.calendar class="w-4 h-4 mr-2" />
+                                    Registro
+                                    <flux:icon.chevron-up-down class="w-4 h-4 ml-1" />
+                                </div>
+                            </th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Acciones
+                            </th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         @forelse($usuarios as $usuario)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
                             <td class="px-6 py-4 whitespace-nowrap">

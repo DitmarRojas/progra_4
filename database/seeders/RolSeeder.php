@@ -14,7 +14,7 @@ class RolSeeder extends Seeder
     public function run(): void
     {
         Rol::create([
-            'nombre' => 'Administrador',
+            'nombre' => 'Contador General',
             'descripcion' => 'Rol con todos los permisos',
         ]);
 

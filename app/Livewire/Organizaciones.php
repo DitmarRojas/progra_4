@@ -38,7 +38,7 @@ class Organizaciones extends Component
             'direccion' => $this->direccion,
             'telefono' => $this->telefono,
         ]);
-        $this->dispatch('alertaOrg');
+        $this->dispatch('alertas');
         session()->flash('message', 'Organización creada exitosamente.');
         $this->vaciarFormulario();
         $this->modal('crearOrganizacion')->close();
@@ -75,7 +75,7 @@ class Organizaciones extends Component
                 'direccion' => $this->direccion,
                 'telefono' => $this->telefono,
             ]);
-            $this->dispatch('alertaOrg');
+            $this->dispatch('alertas');
             session()->flash('message', 'Organización actualizada exitosamente.');
         }
         $this->vaciarFormulario();
@@ -95,7 +95,7 @@ class Organizaciones extends Component
         $organizacion = Organizacion::find($this->organizacion_id);
         if ($organizacion) {
             $organizacion->delete();
-            $this->dispatch('alertaOrg');
+            $this->dispatch('alertas');
             session()->flash('message', 'Organización eliminada exitosamente.');
             $this->vaciarFormulario();
             $this->modal('eliminarOrganizacion')->close();

@@ -10,6 +10,8 @@ use App\Livewire\Cuentas;
 use App\Livewire\Usuarios;
 use App\Livewire\Organizaciones;
 use App\Livewire\Periodos;
+use App\Livewire\Transacciones;
+use App\Livewire\AsientosDiarios;
 
 /* Route::get('/', function () {
     return view('welcome');
@@ -31,6 +33,8 @@ Route::middleware(['auth' , VerificarUsuarioNoBloqueado::class])->group(function
     Route::get('/organizaciones', Organizaciones::class)->name('organizaciones');
     Route::get('/cuentas', Cuentas::class)->name('cuentas');
     Route::get('/periodos', Periodos::class)->name('periodos');
+    Route::get('/transacciones', Transacciones::class)->name('transacciones');
+    Route::get('/asientos-diarios', AsientosDiarios::class)->name('asientos-diarios');
 });
 
 require __DIR__.'/auth.php';

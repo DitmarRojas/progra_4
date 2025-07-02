@@ -30,6 +30,9 @@
                 <flux:navbar.item icon="calendar-range" :href="route('periodos')" :current="request()->routeIs('periodos')" wire:navigate>
                     {{ __('Periodos') }}
                 </flux:navbar.item>
+                <flux:navbar.item icon="calendar-range" :href="route('transacciones')" :current="request()->routeIs('transacciones')" wire:navigate>
+                    {{ __('Transacciones') }}
+                </flux:navbar.item>
             </flux:navbar>
             @endif
 
@@ -109,6 +112,9 @@
                     </flux:navlist.item>
                     <flux:navlist.item icon="calendar-range" :href="route('periodos')" :current="request()->routeIs('periodos')" wire:navigate>
                         {{ __('Periodos') }}
+                    </flux:navlist.item>
+                    <flux:navlist.item icon="calendar-range" :href="route('transacciones')" :current="request()->routeIs('transacciones')" wire:navigate>
+                        {{ __('Transacciones') }}
                     </flux:navlist.item>
                     @endif
                 </flux:navlist.group>

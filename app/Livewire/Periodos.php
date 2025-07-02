@@ -2,9 +2,11 @@
 
 namespace App\Livewire;
 
+use App\Exports\SumasYSaldosExport;
 use App\Models\Organizacion;
 use App\Models\Periodo;
 use Livewire\Component;
+use Maatwebsite\Excel\Facades\Excel;
 
 class Periodos extends Component
 {
@@ -40,7 +42,7 @@ class Periodos extends Component
             'fecha_fin' => $this->fecha_fin,
             'organizacion_id' => $this->organizacion_id,
         ]);
-        $this->dispatch('alertaPeriodo');
+        $this->dispatch('alertas');
         session()->flash('message', 'Periodo creado exitosamente.');
         $this->vaciarFormulario();
         $this->modal('crearPeriodo')->close();
@@ -76,7 +78,7 @@ class Periodos extends Component
                 'fecha_fin' => $this->fecha_fin,
                 'organizacion_id' => $this->organizacion_id,
             ]);
-            $this->dispatch('alertaPeriodo');
+            $this->dispatch('alertas');
             session()->flash('message', 'Periodo actualizado exitosamente.');
         }
         $this->vaciarFormulario();
@@ -97,7 +99,7 @@ class Periodos extends Component
         $periodo = Periodo::find($this->periodo_id);
         if ($periodo) {
             $periodo->delete();
-            $this->dispatch('alertaPeriodo');
+            $this->dispatch('alertas');
             session()->flash('message', 'Periodo eliminado exitosamente.');
             $this->vaciarFormulario();
             $this->modal('eliminarPeriodo')->close();
@@ -147,7 +149,7 @@ class Periodos extends Component
         if ($periodo && $periodo->estado !== 'Cerrado') {
             $periodo->estado = 'Cerrado';
             $periodo->save();
-            $this->dispatch('alertaPeriodo');
+            $this->dispatch('alertas');
             session()->flash('message', 'Periodo ' . $periodo->nombre . ' cerrado correctamente.');
         }
         else
@@ -155,9 +157,45 @@ class Periodos extends Component
             if ($periodo) {
                 $periodo->estado = 'Abierto';
                 $periodo->save();
-                $this->dispatch('alertaPeriodo');
+                $this->dispatch('alertas');
                 session()->flash('message', 'Periodo ' . $periodo->nombre . ' abierto correctamente.');
             }
+        }
+    }
+
+    /**
+     * Redirigir a Sumas y Saldos para revisar el período antes de cerrarlo
+     */
+    public function verSumasYSaldos($id)
+    {
+        return redirect()->route('sumas-saldos', ['periodo' => $id]);
+    }
+
+    /**
+     * Descargar Excel del período cerrado
+     */
+    public function descargarExcel($id)
+    {
+        $periodo = Periodo::with('organizaciones')->find($id);
+        
+        if (!$periodo) {
+            session()->flash('error', 'Período no encontrado.');
+            return;
+        }
+
+        // Solo permitir descarga de períodos cerrados
+        if ($periodo->estado !== 'Cerrado') {
+            session()->flash('error', 'Solo se pueden descargar períodos cerrados.');
+            return;
+        }
+
+        try {
+            $filename = 'Sumas_y_Saldos_' . $periodo->organizaciones->nombre . '_' . $periodo->nombre . '_' . now()->format('Y-m-d') . '.xlsx';
+            
+            return Excel::download(new SumasYSaldosExport($periodo), $filename);
+            
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error al generar el archivo Excel: ' . $e->getMessage());
         }
     }
 

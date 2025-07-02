@@ -1,53 +1,80 @@
 <div>
     <x-action-message 
-        on="alertaPeriodo" 
-        class="flex items-center p-4 mb-4 text-sm font-medium rounded-lg bg-green-50 text-green-800 border border-green-200">
-        <div>
-            <span class="font-semibold">¡Éxito!</span> {{ session('message') }}
-        </div>
-    </x-action-message>
-
-    <x-action-message 
-        on="error" 
-        class="flex items-center p-4 mb-4 text-sm font-medium rounded-lg bg-red-50 text-red-800 border border-red-200">
-        <div>
-            <span class="font-semibold">¡Error!</span> {{ session('error') }}
-        </div>
-    </x-action-message>
-
-    <x-auth-header 
-        :title="__('Gestión de periodos')" 
-        :description="__('Visualiza y administra los periodos de la aplicación')"
-    />
-
-    <div class="mx-auto max-w-7xl">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-            <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Lista de periodos</h1>
-            <div class="flex w-full sm:w-auto">
-                <flux:input wire:model.live="buscar" icon="magnifying-glass" placeholder="Buscar periodo">
-                    <x-slot name="iconTrailing">
-                        <flux:button wire:click="vaciarFormulario" size="sm" variant="subtle" icon="x-mark"/>
-                    </x-slot>
-                </flux:input>
+            on="alertas" 
+            class="flex items-center p-4 mb-4 text-sm font-medium rounded-lg bg-green-50 text-green-800 border border-green-200 shadow-lg pointer-events-auto">
+            <div>
+                <span class="font-semibold">¡Éxito!</span> {{ session('message') }}
             </div>
-                <flux:modal.trigger name="crearPeriodo">
-                    <flux:button wire:click="crearModal" 
-                    variant="primary"
-                    icon="plus"
-                    class="w-full sm:w-auto bg-emerald-700 hover:bg-emerald-800"> Nueva periodo
-                    </flux:button>
-                </flux:modal.trigger>
+    </x-action-message>
+
+    {{-- Header principal --}}
+    <div class="mb-8">
+        <flux:heading size="xl" class="text-gray-900 dark:text-gray-100">Gestión de Períodos Contables</flux:heading>
+        <flux:subheading class="text-gray-600 dark:text-gray-400">Administra los períodos fiscales y de ejercicio contable</flux:subheading>
+    </div>
+
+    {{-- Panel principal de gestión --}}
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+        <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div class="flex items-center">
+                    <flux:icon.calendar-days class="w-5 h-5 mr-2 text-emerald-600 dark:text-emerald-400" />
+                    <flux:heading size="lg" class="text-gray-900 dark:text-gray-100">Lista de Períodos</flux:heading>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+                    <div class="flex-1 sm:w-80">
+                        <flux:input 
+                            wire:model.live="buscar" 
+                            icon="magnifying-glass" 
+                            placeholder="Buscar período..."
+                            class="w-full">
+                            <x-slot name="iconTrailing">
+                                @if($buscar)
+                                    <flux:button wire:click="vaciarFormulario" size="sm" variant="ghost" icon="x-mark"/>
+                                @endif
+                            </x-slot>
+                        </flux:input>
+                    </div>
+                    
+                    <flux:modal.trigger name="crearPeriodo">
+                        <flux:button 
+                            wire:click="crearModal" 
+                            variant="primary"
+                            icon="plus">
+                            Nuevo Período
+                        </flux:button>
+                    </flux:modal.trigger>
+                </div>
+            </div>
         </div>
 
-        <!-- Tabla de periodos -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300">
+        <div class="p-6">
             <div class="overflow-x-auto">
-                <table class="w-full min-w-max">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th wire:click="ordenar('nombre')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nombre</th>
-                            <th wire:click="ordenar('fecha_inicio')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Fecha de inicio</th>
-                            <th wire:click="ordenar('fecha_fin')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Fecha de fin</th>
+                            <th wire:click="ordenar('nombre')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <div class="flex items-center">
+                                    <flux:icon.calendar-days class="w-4 h-4 mr-2" />
+                                    Período
+                                    <flux:icon.chevron-up-down class="w-4 h-4 ml-1" />
+                                </div>
+                            </th>
+                            <th wire:click="ordenar('fecha_inicio')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <div class="flex items-center">
+                                    <flux:icon.calendar class="w-4 h-4 mr-2" />
+                                    Fecha Inicio
+                                    <flux:icon.chevron-up-down class="w-4 h-4 ml-1" />
+                                </div>
+                            </th>
+                            <th wire:click="ordenar('fecha_fin')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                <div class="flex items-center">
+                                    <flux:icon.calendar class="w-4 h-4 mr-2" />
+                                    Fecha Fin
+                                    <flux:icon.chevron-up-down class="w-4 h-4 ml-1" />
+                                </div>
+                            </th>
                             <th wire:click="ordenar('organizacion_id')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Organización</th>
                             <th wire:click="ordenar('estado')" class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Estado</th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
@@ -106,6 +133,28 @@
                                         </flux:tooltip>
                                     </flux:modal.trigger>
                                 </div>
+                                <div>
+                                    <flux:tooltip content="Sumas y Saldos" placement="top">
+                                        <flux:button 
+                                            wire:click="verSumasYSaldos({{ $periodo->id }})"
+                                            variant="primary"
+                                            icon="document-chart-bar"
+                                            class="bg-indigo-400 hover:bg-indigo-500">
+                                        </flux:button>
+                                    </flux:tooltip>
+                                </div>
+                                @if($periodo->estado === 'Cerrado')
+                                <div>
+                                    <flux:tooltip content="Descargar Excel" placement="top">
+                                        <flux:button 
+                                            wire:click="descargarExcel({{ $periodo->id }})"
+                                            variant="primary"
+                                            icon="document-arrow-down"
+                                            class="bg-green-400 hover:bg-green-500">
+                                        </flux:button>
+                                    </flux:tooltip>
+                                </div>
+                                @endif
                                 <div>
                                     @if($periodo->estado !== 'Cerrado')
                                         <flux:tooltip content="Cerrar periodo" placement="top">

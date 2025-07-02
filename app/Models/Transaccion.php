@@ -20,6 +20,11 @@ class Transaccion extends Model
         'usuario_id',
     ];
 
+    protected $casts = [
+        'estado' => 'boolean',
+        'fecha_transaccion' => 'date:Y-m-d',
+    ];
+
     public function usuarios()
     {
         return $this->belongsTo(Usuario::class, 'usuario_id');
@@ -29,8 +34,9 @@ class Transaccion extends Model
     {
         return $this->hasMany(AsientosDiario::class);
     }
-    public function transacciones()
+
+    public function cuentas()
     {
-        return $this->hasMany(Transaccion::class);
+        return $this->belongsToMany(Cuenta::class, 'asientos_diarios', 'transaccion_id', 'cuenta_id');
     }
 }

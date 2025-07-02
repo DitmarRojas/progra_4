@@ -13,19 +13,19 @@ class AsientosDiario extends Model
 
     protected $fillable = [
         'nro_asiento',
-        'moto_credito',
-        'monto_debito',
+        'monto_debe',
+        'monto_haber',
         'descripcion',
         'transaccion_id',
         'cuenta_id',
     ];
 
-    public function transacciones()
+    public function transaccion()
     {
         return $this->belongsTo(Transaccion::class, 'transaccion_id');
     }
     
-    public function cuentas()
+    public function cuenta()
     {
         return $this->belongsTo(Cuenta::class, 'cuenta_id');
     }
