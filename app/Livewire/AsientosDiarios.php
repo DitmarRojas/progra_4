@@ -18,6 +18,7 @@ class AsientosDiarios extends Component
     // Propiedades para filtros
     public $buscar = '';
     public $filtroTransaccion = '';
+    public $filtroOrganizacion = '';
     public $filtroCuenta = '';
 
     // Propiedades para el formulario
@@ -42,6 +43,15 @@ class AsientosDiarios extends Component
         // Si viene un filtro de transacción por URL, aplicarlo
         if (request()->has('filtroTransaccion')) {
             $this->filtroTransaccion = request('filtroTransaccion');
+            
+            // Si hay una transacción, cargar automáticamente su organización
+            if ($this->filtroTransaccion) {
+                $transaccion = Transaccion::find($this->filtroTransaccion);
+                if ($transaccion) {
+                    $this->filtroOrganizacion = $transaccion->organizacion_id;
+                    $this->organizacion_id = $transaccion->organizacion_id;
+                }
+            }
         }
     }
 
@@ -55,12 +65,39 @@ class AsientosDiarios extends Component
         $this->resetPage();
     }
 
+    public function updatingFiltroOrganizacion()
+    {
+        $this->resetPage();
+        // Al cambiar la organización, resetear la cuenta seleccionada
+        $this->cuenta_id = '';
+        $this->filtroCuenta = '';
+    }
+
     public function updatingFiltroCuenta()
     {
         $this->resetPage();
     }
 
+    public function updatedOrganizacionId($value)
+    {
+        // Cuando cambie la organización, resetear la cuenta y transacción
+        $this->cuenta_id = '';
+        $this->transaccion_id = '';
+        
+        // Forzar re-renderizado para actualizar las cuentas y transacciones disponibles
+        $this->dispatch('$refresh');
+    }
 
+    public function updatedTransaccionId($value)
+    {
+        // Cuando se seleccione una transacción, cargar su organización automáticamente
+        if ($value) {
+            $transaccion = Transaccion::find($value);
+            if ($transaccion) {
+                $this->organizacion_id = $transaccion->organizacion_id;
+            }
+        }
+    }
 
     public function ordenar($campo)
     {
@@ -144,13 +181,6 @@ class AsientosDiarios extends Component
         $asiento = AsientosDiario::with(['transaccion', 'cuenta'])->find($id);
         
         if ($asiento) {
-            // Verificar si el asiento pertenece a un período cerrado
-            if ($this->asientoEnPeriodoCerrado($id)) {
-                session()->flash('error', 'No se puede editar un asiento que pertenece a un período cerrado.');
-                $this->dispatch('error');
-                return;
-            }
-
             $this->nro_asiento = $asiento->nro_asiento;
             $this->monto_debe = $asiento->monto_debe;
             $this->monto_haber = $asiento->monto_haber;
@@ -168,13 +198,6 @@ class AsientosDiarios extends Component
         // Verificar que la transacción no esté contabilizada
         if ($asiento && $asiento->transaccion && $asiento->transaccion->estado) {
             session()->flash('error', 'No se puede editar un asiento de una transacción ya contabilizada.');
-            $this->dispatch('error');
-            return;
-        }
-
-        // Verificar si el asiento pertenece a un período cerrado
-        if ($this->asientoEnPeriodoCerrado($this->asiento_id)) {
-            session()->flash('error', 'No se puede editar un asiento que pertenece a un período cerrado.');
             $this->dispatch('error');
             return;
         }
@@ -237,13 +260,6 @@ class AsientosDiarios extends Component
             $this->dispatch('error');
             return;
         }
-
-        // Verificar si el asiento pertenece a un período cerrado
-        if ($this->asientoEnPeriodoCerrado($id)) {
-            session()->flash('error', 'No se puede eliminar un asiento que pertenece a un período cerrado.');
-            $this->dispatch('error');
-            return;
-        }
     }
 
     public function eliminarAsiento()
@@ -267,30 +283,10 @@ class AsientosDiarios extends Component
     {
         $this->reset([
             'asiento_id', 'nro_asiento', 'monto_debe', 'monto_haber', 
-            'descripcion', 'transaccion_id', 'cuenta_id', 'organizacion_id'
+            'descripcion', 'transaccion_id', 'cuenta_id'
         ]);
         $this->resetErrorBag();
         $this->resetValidation();
-    }
-
-    /**
-     * Redirige a la vista de transacciones para editar la transacción del asiento
-     */
-    public function editarTransaccion($asientoId)
-    {
-        $asiento = AsientosDiario::with('transaccion')->find($asientoId);
-        
-        if ($asiento && $asiento->transaccion) {
-            // Verificar que la transacción esté en estado pendiente
-            if (!$asiento->transaccion->estado) {
-                return redirect()->route('transacciones', ['editarTransaccion' => $asiento->transaccion_id]);
-            } else {
-                session()->flash('error', 'No se puede editar una transacción ya contabilizada.');
-                return;
-            }
-        }
-        
-        session()->flash('error', 'No se pudo encontrar la transacción asociada al asiento.');
     }
 
     /**
@@ -310,7 +306,7 @@ class AsientosDiarios extends Component
     }
 
     /**
-     * Obtiene las transacciones que tienen asientos con cuentas de una organización específica
+     * Obtiene las transacciones de una organización específica
      */
     private function getTransaccionesPorOrganizacion($organizacionId)
     {
@@ -318,17 +314,8 @@ class AsientosDiarios extends Component
             return collect();
         }
         
-        // CORRECCIÓN: Ya no buscar organizacion_id directo en transacciones
-        // Buscar transacciones que tienen asientos con cuentas de la organización
-        return Transaccion::select('transacciones.id', 'transacciones.descripcion', 'transacciones.fecha_transaccion', 'transacciones.tipo_transaccion', 'transacciones.estado')
-            ->whereExists(function($query) use ($organizacionId) {
-                $query->select(DB::raw(1))
-                      ->from('asientos_diarios')
-                      ->join('cuentas', 'asientos_diarios.cuenta_id', '=', 'cuentas.id')
-                      ->join('cuentas_orgs', 'cuentas.id', '=', 'cuentas_orgs.cuenta_id')
-                      ->whereColumn('asientos_diarios.transaccion_id', 'transacciones.id')
-                      ->where('cuentas_orgs.organizacion_id', $organizacionId);
-            })
+        return Transaccion::select('id', 'descripcion', 'fecha_transaccion', 'tipo_transaccion', 'estado')
+            ->where('organizacion_id', $organizacionId)
             ->orderBy('fecha_transaccion', 'desc')
             ->get();
     }
@@ -368,32 +355,6 @@ class AsientosDiarios extends Component
         return 'AST-' . str_pad($numero, 3, '0', STR_PAD_LEFT);
     }
 
-    /**
-     * Verificar si un asiento pertenece a un período cerrado
-     */
-    private function asientoEnPeriodoCerrado($asientoId)
-    {
-        $asiento = AsientosDiario::with('transaccion')->find($asientoId);
-        
-        if (!$asiento || !$asiento->transaccion) {
-            return false;
-        }
-
-        // Buscar si la transacción del asiento está en un período cerrado
-        $periodosCerrados = DB::table('asientos_diarios')
-            ->join('transacciones', 'asientos_diarios.transaccion_id', '=', 'transacciones.id')
-            ->join('cuentas', 'asientos_diarios.cuenta_id', '=', 'cuentas.id')
-            ->join('cuentas_orgs', 'cuentas.id', '=', 'cuentas_orgs.cuenta_id')
-            ->join('periodos', 'cuentas_orgs.organizacion_id', '=', 'periodos.organizacion_id')
-            ->where('asientos_diarios.id', $asientoId)
-            ->where('periodos.estado', 'Cerrado')
-            ->whereDate('transacciones.fecha_transaccion', '>=', DB::raw('periodos.fecha_inicio'))
-            ->whereDate('transacciones.fecha_transaccion', '<=', DB::raw('periodos.fecha_fin'))
-            ->exists();
-
-        return $periodosCerrados;
-    }
-
     public function render()
     {
         $query = AsientosDiario::with(['transaccion', 'cuenta']);
@@ -414,23 +375,37 @@ class AsientosDiarios extends Component
             $query->where('transaccion_id', $this->filtroTransaccion);
         }
 
-
+        if ($this->filtroOrganizacion) {
+            $query->whereHas('transaccion', function($q) {
+                $q->where('organizacion_id', $this->filtroOrganizacion);
+            });
+        }
 
         if ($this->filtroCuenta) {
             $query->where('cuenta_id', $this->filtroCuenta);
         }
 
         $asientos = $query->orderBy($this->contenido, $this->orden)->paginate(15)->withQueryString();
+
+        $organizaciones = Organizacion::select('id', 'nombre')->get();
+        $cuentasDisponibles = $this->getCuentasPorOrganizacion($this->organizacion_id);
+        $transaccionesDisponibles = $this->getTransaccionesPorOrganizacion($this->organizacion_id);
         
-        // Para los filtros de transacciones, mostrar todas las transacciones
+        // Para los filtros
         $todasTransacciones = Transaccion::select('id', 'descripcion', 'fecha_transaccion')
+            ->when($this->filtroOrganizacion, function($q) {
+                $q->where('organizacion_id', $this->filtroOrganizacion);
+            })
             ->orderBy('fecha_transaccion', 'desc')
             ->get();
             
-        $todasCuentas = Cuenta::select('id', 'codigo', 'nombre')->orderBy('codigo')->get();
+        $todasCuentas = $this->getCuentasPorOrganizacion($this->filtroOrganizacion);
 
         return view('livewire.asientos-diarios', [
             'asientos' => $asientos,
+            'organizaciones' => $organizaciones,
+            'cuentasDisponibles' => $cuentasDisponibles,
+            'transaccionesDisponibles' => $transaccionesDisponibles,
             'todasTransacciones' => $todasTransacciones,
             'todasCuentas' => $todasCuentas,
         ]);

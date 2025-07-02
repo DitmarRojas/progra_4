@@ -12,6 +12,7 @@ use App\Livewire\Organizaciones;
 use App\Livewire\Periodos;
 use App\Livewire\Transacciones;
 use App\Livewire\AsientosDiarios;
+use App\Livewire\SumasYSaldos;
 
 /* Route::get('/', function () {
     return view('welcome');
@@ -34,7 +35,8 @@ Route::middleware(['auth' , VerificarUsuarioNoBloqueado::class])->group(function
     Route::get('/cuentas', Cuentas::class)->name('cuentas');
     Route::get('/periodos', Periodos::class)->name('periodos');
     Route::get('/transacciones', Transacciones::class)->name('transacciones');
-    Route::get('/asientos-diarios', AsientosDiarios::class)->name('asientos-diarios');
+    Route::get('/asientos_diarios', AsientosDiarios::class)->name('asientos_diarios');
+    Route::get('/sumas-saldos', SumasYSaldos::class)->name('sumas-saldos');
 });
 
 require __DIR__.'/auth.php';

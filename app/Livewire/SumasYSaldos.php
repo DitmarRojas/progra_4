@@ -7,50 +7,41 @@ use App\Models\Transaccion;
 use App\Models\Cuenta;
 use App\Models\Organizacion;
 use App\Models\Periodo;
+use App\Exports\SumasYSaldosExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
-use Livewire\WithPagination;
 
 class SumasYSaldos extends Component
 {
-    use WithPagination;
-
-    // Filtros
-    public $periodoId = '';
-    public $buscar = '';
-    
     // Propiedades para ordenamiento
     public $contenido = 'codigo';
     public $orden = 'asc';
 
     // Información del período cargado
     public $periodo = null;
-    
-    // Modal de confirmación para cerrar período
-    public $mostrarModalCerrar = false;
 
-    public function mount()
+    public function mount($periodoId = null)
     {
-        // Si viene un período por URL, cargarlo
-        if (request()->has('periodo')) {
-            $this->periodoId = request('periodo');
-            $this->cargarPeriodo();
+        // Cargar período desde parámetro de URL o request
+        $id = $periodoId ?? request('periodo');
+        
+        if ($id) {
+            $this->periodo = Periodo::with('organizaciones')->find($id);
+        }
+
+        // Si no hay período, redirigir a períodos
+        if (!$this->periodo) {
+            return redirect()->route('periodos');
         }
     }
 
     /**
-     * Cargar información del período seleccionado
+     * Regresar a la vista de períodos
      */
-    private function cargarPeriodo()
+    public function volverAPeriodos()
     {
-        if ($this->periodoId) {
-            $this->periodo = Periodo::with('organizaciones')->find($this->periodoId);
-        }
-    }
-
-    public function updatingBuscar()
-    {
-        $this->resetPage();
+        return redirect()->route('periodos');
     }
 
     public function ordenar($campo)
@@ -61,7 +52,6 @@ class SumasYSaldos extends Component
             $this->contenido = $campo;
             $this->orden = 'asc';
         }
-        $this->resetPage();
     }
 
     /**
@@ -93,13 +83,6 @@ class SumasYSaldos extends Component
         ->join('cuentas_orgs', 'cuentas.id', '=', 'cuentas_orgs.cuenta_id')
         ->where('cuentas_orgs.organizacion_id', $this->periodo->organizacion_id);
 
-        // Filtro de búsqueda
-        if ($this->buscar) {
-            $query->where(function($q) {
-                $q->where('cuentas.codigo', 'like', '%' . $this->buscar . '%')
-                  ->orWhere('cuentas.nombre', 'like', '%' . $this->buscar . '%');
-            });
-        }
 
         $cuentas = $query->groupBy('cuentas.id', 'cuentas.codigo', 'cuentas.nombre', 'cuentas.tipo')
                         ->having(DB::raw('COALESCE(SUM(asientos_diarios.monto_debe), 0) + COALESCE(SUM(asientos_diarios.monto_haber), 0)'), '>', 0) // Solo cuentas con movimientos
@@ -191,76 +174,18 @@ class SumasYSaldos extends Component
     }
 
     /**
-     * Mostrar modal de confirmación para cerrar período
+     * Exportar sumas y saldos a Excel
      */
-    public function mostrarModalCerrarPeriodo()
+    public function exportarExcel()
     {
         if (!$this->periodo) {
-            session()->flash('error', 'No hay un período seleccionado.');
+            session()->flash('error', 'No hay un período seleccionado para exportar.');
             return;
         }
 
-        if ($this->periodo->estado === 'Cerrado') {
-            session()->flash('error', 'Este período ya está cerrado.');
-            return;
-        }
-
-        $this->mostrarModalCerrar = true;
-    }
-
-    /**
-     * Cerrar el período actual
-     */
-    public function cerrarPeriodo()
-    {
-        if (!$this->periodo) {
-            session()->flash('error', 'No hay un período seleccionado.');
-            return;
-        }
-
-        if ($this->periodo->estado === 'Cerrado') {
-            session()->flash('error', 'Este período ya está cerrado.');
-            return;
-        }
-
-        // Verificar que el balance esté cuadrado
-        $sumasYSaldos = $this->generarSumasYSaldos();
-        $totales = $this->calcularTotales($sumasYSaldos);
-        $balance = $this->verificarBalance($totales);
-
-        if (!$balance->debe_haber_cuadrado) {
-            session()->flash('error', 'No se puede cerrar el período. El balance debe/haber no está cuadrado.');
-            $this->mostrarModalCerrar = false;
-            return;
-        }
-
-        if (!$balance->balance_cuadrado) {
-            session()->flash('error', 'No se puede cerrar el período. El balance general no está cuadrado.');
-            $this->mostrarModalCerrar = false;
-            return;
-        }
-
-        // Cerrar el período
-        DB::transaction(function () {
-            $this->periodo->update([
-                'estado' => 'Cerrado',
-                'fecha_cierre' => now()
-            ]);
-        });
-
-        $this->mostrarModalCerrar = false;
-        session()->flash('message', 'Período cerrado exitosamente.');
+        $nombreArchivo = 'sumas_y_saldos_' . $this->periodo->organizaciones->nombre . '_' . $this->periodo->nombre . '_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
         
-        // Recargar el período
-        $this->cargarPeriodo();
-    }
-
-    /**
-     * Cancelar el cierre del período
-     */
-    public function cancelarCierre()
-    {
-        $this->mostrarModalCerrar = false;
+        return Excel::download(new SumasYSaldosExport($this->periodo), $nombreArchivo);
     }
 
     public function render()

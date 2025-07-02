@@ -33,6 +33,9 @@
                 <flux:navbar.item icon="calendar-range" :href="route('transacciones')" :current="request()->routeIs('transacciones')" wire:navigate>
                     {{ __('Transacciones') }}
                 </flux:navbar.item>
+                <flux:navbar.item icon="" :href="route('asientos_diarios')" :current="request()->routeIs('asientos_diarios')" wire:navigate>
+                    {{ __('Asientos Diarios') }}
+                </flux:navbar.item>
             </flux:navbar>
             @endif
 
@@ -113,8 +116,8 @@
                     <flux:navlist.item icon="calendar-range" :href="route('periodos')" :current="request()->routeIs('periodos')" wire:navigate>
                         {{ __('Periodos') }}
                     </flux:navlist.item>
-                    <flux:navlist.item icon="calendar-range" :href="route('transacciones')" :current="request()->routeIs('transacciones')" wire:navigate>
-                        {{ __('Transacciones') }}
+                    <flux:navlist.item icon="calendar-range" :href="route('asientos_diarios')" :current="request()->routeIs('asientos_diarios')" wire:navigate>
+                        {{ __('Asientos Diarios') }}
                     </flux:navlist.item>
                     @endif
                 </flux:navlist.group>

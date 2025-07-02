@@ -131,7 +131,7 @@
                     </a>
 
                     {{-- Asientos Diarios --}}
-                    <a href="{{ route('asientos-diarios') }}" class="group" wire:navigate>
+                    <a href="{{ route('asientos_diarios') }}" class="group" wire:navigate>
                         <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-orange-300 dark:hover:border-orange-600 hover:shadow-md transition-all duration-200">
                             <div class="flex items-center">
                                 <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center group-hover:bg-orange-200 dark:group-hover:bg-orange-900/50 transition-colors">

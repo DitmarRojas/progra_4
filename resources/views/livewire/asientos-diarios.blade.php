@@ -29,25 +29,18 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
         <flux:heading size="lg" class="mb-4">Filtros</flux:heading>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <flux:input 
                 wire:model.live="buscar" 
                 placeholder="Buscar asientos..."
                 icon="magnifying-glass"
             />
             
-            <flux:select wire:model.live="filtroOrganizacion" placeholder="Organización">
-                <flux:select.option value="">Todas las organizaciones</flux:select.option>
-                @foreach($organizaciones as $org)
-                    <flux:select.option value="{{ $org->id }}">{{ $org->nombre }}</flux:select.option>
-                @endforeach
-            </flux:select>
-            
             <flux:select wire:model.live="filtroTransaccion" placeholder="Transacción">
                 <flux:select.option value="">Todas las transacciones</flux:select.option>
                 @foreach($todasTransacciones as $trans)
                     <flux:select.option value="{{ $trans->id }}">
-                        {{ $trans->descripcion }} ({{ $trans->fecha_transaccion }})
+                        {{ $trans->descripcion }} ({{ $trans->fecha_transaccion->format('d/m/Y') }})
                     </flux:select.option>
                 @endforeach
             </flux:select>
@@ -60,12 +53,6 @@
                     </flux:select.option>
                 @endforeach
             </flux:select>
-            
-            <flux:modal.trigger name="crearAsiento">
-                <flux:button variant="primary" icon="plus" class="w-full">
-                    Nuevo Asiento
-                </flux:button>
-            </flux:modal.trigger>
         </div>
     </div>
 
@@ -92,14 +79,6 @@
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" wire:click="ordenar('nro_asiento')">
-                            <div class="flex items-center space-x-1">
-                                <span>Nº Asiento</span>
-                                @if($contenido === 'nro_asiento')
-                                    <flux:icon name="{{ $orden === 'asc' ? 'chevron-up' : 'chevron-down' }}" class="w-4 h-4" />
-                                @endif
-                            </div>
-                        </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             Transacción
                         </th>
@@ -136,15 +115,12 @@
                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     @forelse($asientos as $asiento)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                {{ $asiento->nro_asiento ?: '-' }}
-                            </td>
                             <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">
                                 @if($asiento->transaccion)
                                     <div>
                                         <div class="font-medium">{{ Str::limit($asiento->transaccion->descripcion, 30) }}</div>
                                         <div class="text-gray-500 dark:text-gray-400">
-                                            {{ $asiento->transaccion->fecha_transaccion }} | {{ $asiento->transaccion->tipo_transaccion }}
+                                            {{ $asiento->transaccion->fecha_transaccion->format('d/m/Y') }} | {{ $asiento->transaccion->tipo_transaccion }}
                                         </div>
                                     </div>
                                 @else
@@ -154,7 +130,7 @@
                             <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">
                                 @if($asiento->cuenta)
                                     <div>
-                                        <div class="font-mono text-sm">{{ $asiento->cuenta->codigo }}</div>
+                                        <div class="font-mono text-sm font-medium">{{ $asiento->cuenta->codigo }}</div>
                                         <div class="text-gray-600 dark:text-gray-400">{{ Str::limit($asiento->cuenta->nombre, 25) }}</div>
                                     </div>
                                 @else
@@ -192,34 +168,34 @@
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <div class="flex justify-end space-x-2">
                                     @if(!$asiento->transaccion || !$asiento->transaccion->estado)
-                                        <flux:modal.trigger name="editarAsiento">
-                                            <flux:button 
-                                                size="sm" 
-                                                variant="ghost" 
-                                                icon="pencil" 
-                                                wire:click="editarModal({{ $asiento->id }})"
-                                            >
-                                            </flux:button>
-                                        </flux:modal.trigger>
-                                        
-                                        <flux:modal.trigger name="eliminarAsiento">
-                                            <flux:button 
-                                                size="sm" 
-                                                variant="ghost" 
-                                                icon="trash" 
-                                                wire:click="eliminarModal({{ $asiento->id }})"
-                                            >
-                                            </flux:button>
-                                        </flux:modal.trigger>
+                                        <div>
+                                            <flux:tooltip content="Editar asiento" placement="top">
+                                                <flux:button 
+                                                    wire:click="editarAsiento({{ $asiento->id }})"
+                                                    variant="primary"
+                                                    icon="pencil"
+                                                    class="bg-emerald-400 hover:bg-emerald-500">
+                                                </flux:button>
+                                            </flux:tooltip>
+                                        </div>
                                     @else
-                                        <span class="text-gray-400 text-xs">Contabilizada</span>
+                                        <div>
+                                            <flux:tooltip content="Transacción contabilizada - No editable" placement="top">
+                                                <flux:button 
+                                                    variant="primary"
+                                                    icon="lock-closed"
+                                                    disabled
+                                                    class="bg-gray-400 cursor-not-allowed">
+                                                </flux:button>
+                                            </flux:tooltip>
+                                        </div>
                                     @endif
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                            <td colspan="7" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                                 No se encontraron asientos diarios.
                             </td>
                         </tr>
@@ -232,7 +208,7 @@
                         $diferencia = $totalDebe - $totalHaber;
                     @endphp
                     <tr class="font-medium">
-                        <td colspan="4" class="px-6 py-3 text-right text-sm text-gray-900 dark:text-white">
+                        <td colspan="3" class="px-6 py-3 text-right text-sm text-gray-900 dark:text-white">
                             <strong>Totales:</strong>
                         </td>
                         <td class="px-6 py-3 text-right text-sm">
@@ -246,7 +222,7 @@
                             </span>
                         </td>
                         <td class="px-6 py-3 text-center text-sm">
-                            @if($diferencia == 0)
+                            @if(abs($diferencia) < 0.01)
                                 <flux:badge color="green" size="sm">Cuadrado</flux:badge>
                             @else
                                 <flux:badge color="red" size="sm">Descuadrado</flux:badge>
@@ -264,194 +240,4 @@
             </div>
         @endif
     </div>
-
-    {{-- Modal Crear Asiento --}}
-    <flux:modal name="crearAsiento" variant="flyout">
-        <div class="space-y-6">
-            <flux:heading size="lg">Nuevo Asiento Diario</flux:heading>
-            
-            <form wire:submit="crear" class="space-y-4">
-                {{-- Selección de Organización --}}
-                <flux:select wire:model="organizacion_id" label="Organización" required>
-                    <flux:select.option value="">Seleccione la organización</flux:select.option>
-                    @foreach($organizaciones as $organizacion)
-                        <flux:select.option value="{{ $organizacion->id }}">{{ $organizacion->nombre }}</flux:select.option>
-                    @endforeach
-                </flux:select>
-                
-                {{-- Información de cuentas y transacciones disponibles --}}
-                @if($organizacion_id)
-                    <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
-                        <div class="text-sm text-gray-600 dark:text-gray-400">
-                            <strong>{{ $cuentasDisponibles->count() }}</strong> cuentas y 
-                            <strong>{{ $transaccionesDisponibles->count() }}</strong> transacciones disponibles
-                        </div>
-                    </div>
-                @endif
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <flux:select wire:model="transaccion_id" label="Transacción" required>
-                        <flux:select.option value="">Seleccione la transacción</flux:select.option>
-                        @foreach($transaccionesDisponibles as $transaccion)
-                            <flux:select.option value="{{ $transaccion->id }}">
-                                {{ $transaccion->descripcion }} 
-                                @if($transaccion->estado)
-                                    (Contabilizada)
-                                @else
-                                    ({{ $transaccion->fecha_transaccion }})
-                                @endif
-                            </flux:select.option>
-                        @endforeach
-                    </flux:select>
-                    
-                    <flux:select wire:model="cuenta_id" label="Cuenta" required>
-                        <flux:select.option value="">Seleccione la cuenta</flux:select.option>
-                        @foreach($cuentasDisponibles as $cuenta)
-                            <flux:select.option value="{{ $cuenta->id }}">
-                                {{ $cuenta->codigo }} - {{ $cuenta->nombre }}
-                            </flux:select.option>
-                        @endforeach
-                    </flux:select>
-                </div>
-                
-                <flux:input 
-                    wire:model="nro_asiento" 
-                    label="Número de Asiento" 
-                    placeholder="Se genera automáticamente si se deja vacío" 
-                />
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <flux:input 
-                        wire:model="monto_debe" 
-                        label="Monto Debe" 
-                        type="number" 
-                        step="0.01" 
-                        min="0"
-                        placeholder="0.00"
-                    />
-                    
-                    <flux:input 
-                        wire:model="monto_haber" 
-                        label="Monto Haber" 
-                        type="number" 
-                        step="0.01" 
-                        min="0"
-                        placeholder="0.00"
-                    />
-                </div>
-                
-                <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
-                    <div class="text-sm text-yellow-800 dark:text-yellow-300">
-                        <strong>Nota:</strong> Solo puede tener valor en Debe O en Haber, no en ambos campos al mismo tiempo.
-                    </div>
-                </div>
-                
-                <flux:textarea 
-                    wire:model="descripcion" 
-                    label="Descripción" 
-                    rows="3" 
-                    placeholder="Descripción opcional del asiento..."
-                />
-                
-                <div class="flex">
-                    <flux:spacer />
-                    <flux:button type="submit" variant="primary">Crear Asiento</flux:button>
-                </div>
-            </form>
-        </div>
-    </flux:modal>
-
-    {{-- Modal Editar Asiento --}}
-    <flux:modal name="editarAsiento" variant="flyout">
-        <div class="space-y-6">
-            <flux:heading size="lg">Editar Asiento Diario</flux:heading>
-            
-            <form wire:submit="editar" class="space-y-4">
-                {{-- Selección de Organización --}}
-                <flux:select wire:model="organizacion_id" label="Organización" required>
-                    <flux:select.option value="">Seleccione la organización</flux:select.option>
-                    @foreach($organizaciones as $organizacion)
-                        <flux:select.option value="{{ $organizacion->id }}">{{ $organizacion->nombre }}</flux:select.option>
-                    @endforeach
-                </flux:select>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <flux:select wire:model="transaccion_id" label="Transacción" required>
-                        <flux:select.option value="">Seleccione la transacción</flux:select.option>
-                        @foreach($transaccionesDisponibles as $transaccion)
-                            <flux:select.option value="{{ $transaccion->id }}">
-                                {{ $transaccion->descripcion }} ({{ $transaccion->fecha_transaccion }})
-                            </flux:select.option>
-                        @endforeach
-                    </flux:select>
-                    
-                    <flux:select wire:model="cuenta_id" label="Cuenta" required>
-                        <flux:select.option value="">Seleccione la cuenta</flux:select.option>
-                        @foreach($cuentasDisponibles as $cuenta)
-                            <flux:select.option value="{{ $cuenta->id }}">
-                                {{ $cuenta->codigo }} - {{ $cuenta->nombre }}
-                            </flux:select.option>
-                        @endforeach
-                    </flux:select>
-                </div>
-                
-                <flux:input 
-                    wire:model="nro_asiento" 
-                    label="Número de Asiento" 
-                />
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <flux:input 
-                        wire:model="monto_debe" 
-                        label="Monto Debe" 
-                        type="number" 
-                        step="0.01" 
-                        min="0"
-                    />
-                    
-                    <flux:input 
-                        wire:model="monto_haber" 
-                        label="Monto Haber" 
-                        type="number" 
-                        step="0.01" 
-                        min="0"
-                    />
-                </div>
-                
-                <flux:textarea 
-                    wire:model="descripcion" 
-                    label="Descripción" 
-                    rows="3" 
-                />
-                
-                <div class="flex">
-                    <flux:spacer />
-                    <flux:button type="submit" variant="primary">Actualizar Asiento</flux:button>
-                </div>
-            </form>
-        </div>
-    </flux:modal>
-
-    {{-- Modal Eliminar Asiento --}}
-    <flux:modal name="eliminarAsiento" variant="flyout">
-        <div class="space-y-6">
-            <flux:heading size="lg">Eliminar Asiento Diario</flux:heading>
-            
-            <flux:text>
-                ¿Estás seguro de que deseas eliminar este asiento diario? Esta acción no se puede deshacer.
-            </flux:text>
-            
-            <div class="flex justify-end space-x-2">
-                <flux:modal.close>
-                    <flux:button variant="ghost">Cancelar</flux:button>
-                </flux:modal.close>
-                <flux:button 
-                    wire:click="eliminarAsiento" 
-                    variant="danger"
-                >
-                    Eliminar
-                </flux:button>
-            </div>
-        </div>
-    </flux:modal>
 </div>
